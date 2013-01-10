@@ -13,7 +13,10 @@
  <script>
 $(function() {
 	$( "#tabs" ).tabs();
-	$( "#tabs" ).tabs("option", "disabled", [ 1, 2, 3 ] );
+	$( "#tabs" ).tabs({
+		disabled : [ 1, 2, 3 ],
+		heightStyle : "auto"
+	});
 
 
 	$("#google, #bing, #yours").change(function(){
@@ -79,26 +82,21 @@ $(function() {
 	
 	
 	
-	<div id="map_container" style="float:right;width:70%;padding:0;margin:0;overflow:hidden;">
+	<div id="map_container" style="border: 1px solid gray;float: right;height: 605px;margin: 0 0 0 5px;overflow: hidden;width: 70%;">
 		<div id="map_canvas" style="width:100%;height:100%;"></div>
 	</div>
 	
-	
-	
-	<div id="tabs" style="width:28%;float:left;">
-<ul>
-<li><a href="#map_description">Google</a></li>
-<li><a href="#tabs-2">Bing</a></li>
-<li><a href="#tabs-3">YOURS</a></li>
-</ul>
-<div id="map_description"></div>
-<div id="tabs-2"></div>
-<div id="tabs-3"></div>
-</div>
-<!--	<div id="map_description" >
+	<div id="tabs" style="width:28%;float:left;overflow:auto; height:600px;">
+		<ul>
+			<li><a href="#map_description" style="color:#fff;font-weight:bold;background:#000;">Google</a></li>
+			<li><a href="#tabs-2" style="color:#fff;font-weight:bold;background:red;">Bing</a></li>
+			<li><a href="#tabs-3" style="color:#fff;font-weight:bold;background:blue;">YOURS</a></li>
+		</ul>
+		<div id="map_description"></div>
+		<div id="tabs-2"></div>
+		<div id="tabs-3"></div>
 	</div>
-	-->
-		<div style="clear:both"></div>
+	<div style="clear:both"></div>
 </div> 
   
 </body>

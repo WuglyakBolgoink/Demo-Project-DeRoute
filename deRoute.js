@@ -3,7 +3,7 @@ var geocoder; // fuer Koordinaten
 var directionDisplay;
 var directionsService = new google.maps.DirectionsService();
 		
-var map;  // angezeigte karte beim Start
+var map;  // angezeigte karte
 var KML_Layer;
 var KML_Layer_BING;
 var prev_KML_Layer;
@@ -16,6 +16,17 @@ var def_punktA=default_loc;
 var def_punktB="dachau";	
 var nav = [];
 var markPoint;
+
+//für start und end Punkten aus web-seiten Elemente
+var pA;
+var pB;
+//für test2a: getKoordinaten für PunktA
+var pA_lng;
+var pA_lat;
+//für test2b: getKor für PunktB
+var pB_lng;
+var pB_lat;	
+var selectedMode;
 
 var polylineOptionsActual = new google.maps.Polyline({
 	strokecolor: '#e3e3e3',
@@ -120,8 +131,8 @@ $(document).ready(function() {
 	 	//testen ob Benutzer alles richtig gewählt, geschriben... bevor Berechnung zu starten 
 	 	
 	 	//holen start und end Punkten aus web-seiten Elemente
-	 	var pA=$("#start").val();
-	 	var pB=$("#end").val();
+	 	pA=$("#start").val();
+	 	pB=$("#end").val();
 	 	
 		//------------------------------------------------------------------------------------	 	
 	 	//Test1: falls Punkt A oder B leer ist
@@ -131,8 +142,7 @@ $(document).ready(function() {
 	 	}
 		//------------------------------------------------------------------------------------
 		//test2a: getKoordinaten für PunktA
-		var pA_lng;
-		var pA_lat;
+
 	 	
 	 	//bekommen JSON-Object von Google mit Koordinaten darin
 	 	var request = $.ajax({
@@ -161,8 +171,6 @@ $(document).ready(function() {
 		
 		//------------------------------------------------------------------------------------
 	 	//test2b: getKor für PunktB
-		var pB_lng;
-		var pB_lat;		
 	 	
 	 	var request = $.ajax({
 			async: false,
@@ -204,13 +212,133 @@ $(document).ready(function() {
 				TRANSIT	Specifies a transit directions request.
 				WALKING	Specifies a walking directions request.
 			*/			
-			var selectedMode=$("#mode").val();  //TravelMode
-//------- 			
+			selectedMode=$("#mode").val();  //TravelMode
+		
  			//falls GOOGLE 
  			if (stat_g){
- 			//http://maps.googleapis.com/maps/api/directions/json?origin=munich&destination=dachau&sensor=false
+ 				loadGoogleRoute();
+ 			}
+
+ 			//falls bing
+ 			if (stat_b){
+	 			loadBingRoute();
+ 			}
  			
- 						// vorbereiten REQUEST
+ 			//falls yours
+ 			if (stat_o){
+ 				loadOpenStreetRoute();
+ 			}		
+ 		
+ 		}//sonst Fehler Meldung!
+ 		else{
+	 		//TODO: statt Fehlermeldung ausschelten die Taste, damit der Benutzer auf der Taste vorher drücken könnte 
+ 			alert("Fehler!!! Kein Route System wurde gewählt!");
+ 			return;
+ 		}	 	
+	 	
+	 });//end click();
+	
+	function loadOpenStreetRoute(){
+		var KML_Layer = new google.maps.KmlLayer('http://www.yournavigation.org/api/1.0/gosmore.php?format=kml&flat='+pA_lat+'&flon='+pA_lng+'&tlat='+pB_lat+'&tlon='+pB_lng+'&v=motorcar&fast=1&layer=mapnik&instructions=1');
+		KML_Layer.setMap(map);
+	}
+	
+	function loadBingRoute(){
+		var global_time_BING=0;
+ 		var global_length_BING=0;
+ 		
+ 		$.ajax({
+			async: false,
+			dataType: "text",
+			url: "getroute.php",
+			data: { 
+				from: pA,
+				to: pB,
+				map: "bing"
+			},
+			success: function(data){
+				var geoXml = new geoXML3.parser({
+					map : map, 
+					afterParse : function(doc) {
+						// Geodata handling goes here, using JSON properties of the doc object
+				    	for (var i = 0; i < doc[0].placemarks.length; i++) {
+				    		//TODO: Schleife löscht Marker aus die Karte, die von KML-File automatisch interpretiert wurden
+				    		// aber Aussehen ist falsch, da viele Markers unterwegs sind :)
+					    	doc[0].placemarks[i].marker.setMap(null);
+					    }
+					}
+    			});
+				
+				geoXml.parse("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml");
+				// KML_Layer_BING = new google.maps.KmlLayer("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml");
+				//	KML_Layer_BING.setMap(map);
+				
+				$.get("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml", function(data){
+					html = "<ul class='bing_descr'>";
+					//loop through placemarks tags
+					$(data).find("Folder").find("Placemark").each(function(index, value){		            	
+		                //get coordinates and place name
+		                coords = $(this).find("coordinates").text();
+		                place = $(this).find("name").text();
+		                descr = $(this).find("description").text();
+		                
+		                global_time_BING += parseFloat($(this).find("time").text().replace(",", "."));
+		                global_length_BING += parseFloat($(this).find("dist").text().replace(",", "."));
+		                
+		                //store as JSON
+		                c = coords.split(",");
+		                nav.push({
+		                    "place": place,
+		                    "lat": c[0],
+		                    "lng": c[1],
+		                    "descr": descr
+		                });
+		                //output as a navigation
+		                html += "<li>"+(index+1)+". "+ place + "</li>";
+	               });
+	               html += "</ul>";
+		           //output as a navigation
+		           $("#tabs-2").html(html);
+
+		           $("#sB").html("Distance:"+global_length_BING.toFixed(2)+"km   gesamte Zeit:"+global_time_BING.toFixed(0)+"Min");
+			
+
+		           //bind clicks on your navigation to scroll to a placemark
+		           $("#tabs-2 li").bind("click", function(){
+			           panToPoint = new google.maps.LatLng(nav[$(this).index()].lng, nav[$(this).index()].lat)
+		
+		               map.panTo(panToPoint);
+		                
+		               // generate Info-Window
+		               var infowindow = new google.maps.InfoWindow({
+			               content: nav[$(this).index()].descr
+			           });
+			           //delete marker				
+			           if (markPoint) {
+				           markPoint.setMap(null);
+				       }
+						
+				       //generate marker
+				       markPoint = new google.maps.Marker({
+					       position: panToPoint,
+						   map: map,
+						   title: nav[$(this).index()].place
+					   });
+
+
+					   //show InfoWindow for Marker
+					   infowindow.open(map,markPoint);
+					}); // end Tab-click
+					
+				}); //end $.get()
+			} //end success
+		}); //end AJAX
+	} //end loadBingRoute()
+	  
+    function loadGoogleRoute(){
+		//http://maps.googleapis.com/maps/api/directions/json?origin=munich&destination=dachau&sensor=false
+ 			
+ 		// vorbereiten REQUEST
         var google_request = {
 	        origin:pA,
             destination:pB,
@@ -263,130 +391,6 @@ $(document).ready(function() {
 				alert("Geocode was not successful for the following reason: " + status+" "+errText);
 			}
         });		
- 			}//end google
-//-------- 		
-//falls bing
- 			if (stat_b){
- 		
- 			
- 			var global_time_BING=0;
- 			var global_length_BING=0;
- 				        $.ajax({
-			async: false,
-			dataType: "text",
-			url: "getroute.php",
-			data: { 
-				from: pA,
-				to: pB,
-				map: "bing"
-			},
-			success: function(data){
-				var geoXml = new geoXML3.parser({map: map, afterParse:function(doc) {
-				  // Geodata handling goes here, using JSON properties of the doc object
-			      for (var i = 0; i < doc[0].placemarks.length; i++) {
-
-			//console.log(doc[0].placemarks[i]);
-			doc[0].placemarks[i].marker.setMap(null);
-    			  }
-
-				}});
-				   geoXml.parse("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml");
-		       // KML_Layer_BING = new google.maps.KmlLayer("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml");
-				//	KML_Layer_BING.setMap(map);
-				
-				 			
- 			$.get("http://cyberkatze.net46.net/sweng/DeRoute/bing.kml", function(data){
-
-            html = "<ul class='bing_descr'>";
-
-            //loop through placemarks tags
-            $(data).find("Folder").find("Placemark").each(function(index, value){
-            		//console.log($(this));
-                //get coordinates and place name
-                coords = $(this).find("coordinates").text();
-                place = $(this).find("name").text();
-                descr = $(this).find("description").text();
-                
-                global_time_BING += parseFloat($(this).find("time").text().replace(",", "."));
-                global_length_BING += parseFloat($(this).find("dist").text().replace(",", "."));
-                
-                //store as JSON
-                c = coords.split(",");
-                nav.push({
-                    "place": place,
-                    "lat": c[0],
-                    "lng": c[1],
-                    "descr": descr
-                });
-                //output as a navigation
-                html += "<li>"+(index+1)+". "+ place + "</li>";
-            })
-             html += "</ul>";
-            //output as a navigation
-            $("#tabs-2").html(html);
-
-$("#sB").html("Distance:"+global_length_BING.toFixed(2)+"km   gesamte Zeit:"+global_time_BING.toFixed(0)+"Min");
-			
-
-            //bind clicks on your navigation to scroll to a placemark
-            $("#tabs-2 li").bind("click", function(){
-
-                panToPoint = new google.maps.LatLng(nav[$(this).index()].lng, nav[$(this).index()].lat)
-
-                map.panTo(panToPoint);
-                
-                
-                // generate Info-Window
-                var infowindow = new google.maps.InfoWindow({
-    				content: nav[$(this).index()].descr
-				});
-
-//delete marker				
-if (markPoint) {
-	markPoint.setMap(null);
-}
-
-//generate marker
- markPoint = new google.maps.Marker({
-    position: panToPoint,
-    map: map,
-    title: nav[$(this).index()].place
-});
-
-
-//show InfoWindow for Marker
-  infowindow.open(map,markPoint);
-     
-            })
-
-        });
-        
- 			
-				
-			}
-			});
-		
- 			
- 			}//end bing
- 			
- 			//falls yours
- 			if (stat_o){
- 			
-		     	var KML_Layer = new google.maps.KmlLayer('http://www.yournavigation.org/api/1.0/gosmore.php?format=kml&flat='+pA_lat+'&flon='+pA_lng+'&tlat='+pB_lat+'&tlon='+pB_lng+'&v=motorcar&fast=1&layer=mapnik&instructions=1');
-				KML_Layer.setMap(map);
- 			}
- 		
- 		
- 		
- 		}//sonst Fehler Meldung!
- 		else{
- 			alert("Fehler!!! Kein Route System wurde gewählt!");
- 			return;
- 		}
-	 	
-	 	
-	 });//end click();
-	  
-	 
+	 }
 
 });//end jQuery.document.ready()
