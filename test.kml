@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+
+<Document>
+  <name>KML Example file</name>
+  <description>Google Earth markers</description>
+
+  <Placemark>
+
+    <Style>
+      <IconStyle>
+        <Icon>
+          <href>root://icons/palette-3.png</href>
+          <x>0</x>
+          <y>0</y>
+          <w>32</w>
+          <h>32</h>
+        </Icon>
+      </IconStyle>
+    </Style>
+
+    <name>Marker 1</name>
+    <description>Some stuff to put in the first info window</description>
+    <Point>
+      <coordinates>-122.1,37.4,0</coordinates>
+    </Point>
+  </Placemark>
+
+  <Placemark>
+    <Style>
+      <IconStyle>
+        <Icon>
+          <href>root://icons/palette-3.png</href>
+          <x>32</x>
+          <y>0</y>
+          <w>32</w>
+          <h>32</h>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <name>Marker 2</name>
+    <description>Some stuff to put in the second info window</description>
+    <Point>
+      <coordinates>-122.0,37.4,0</coordinates>
+    </Point>
+  </Placemark>
+
+</Document>
+</kml>

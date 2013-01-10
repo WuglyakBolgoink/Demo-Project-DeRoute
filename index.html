@@ -1,0 +1,105 @@
+<html>
+<head>
+	<title>DeRoute</title>	
+	<link rel="stylesheet" href="./css/global.css" type="text/css">	
+	 <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+	<meta charset='utf-8' />	
+	 <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+	<!-- Google-Maps -->    
+	<script src="https://maps.googleapis.com/maps/api/js?sensor=false&language=de"></script>
+	<script type="text/javascript"   src="http://geoxml3.googlecode.com/svn/branches/polys/geoxml3.js"></script>
+
+ <script>
+$(function() {
+	$( "#tabs" ).tabs();
+	$( "#tabs" ).tabs("option", "disabled", [ 1, 2, 3 ] );
+
+
+	$("#google, #bing, #yours").change(function(){
+		var id=$(this).attr("id");
+		switch (id){
+			case "google": ind=0; break;
+			case "bing": ind=1; break;
+			case "yours": ind=2; break;
+		}
+		if ($(this).is(":checked")){
+			$( "#tabs" ).tabs( "enable", ind );
+		}
+		else{
+			$( "#tabs" ).tabs( "disable", ind );
+		}
+	});
+});
+
+
+</script>
+
+	<script src="deRoute.js"></script>	
+</head>
+
+<body>
+
+<div id="container" style="width:100%;height:720pxborder:1px solid #555;padding:0;margin:0 auto;position:relative;overflow:hidden;">
+	
+	
+	<div id="navi_container" style="width:100%;height:100px;border-bottom:1px solid #555;float:left;">
+		<div id="nav_punkt">
+			<label><b>Punkt <span style="color:#ff0000;">A</span>:</b>&nbsp;<input type="text" placeholder='<start position>' id="start" /></label>
+			<label><b>Punkt <span style="color:#00FF00;">B</span>:</b>&nbsp;<input type='text' id='end' placeholder='<end position>' /></label>
+		</div>
+		
+		
+		<div id="nav_mode">
+			<label>	
+				<b>TravelMode: </b><br />
+				<select id="mode" style="width:100%;">
+				  <option value="DRIVING">Driving</option>
+				  <option value="WALKING">Walking</option>
+				  <option value="BICYCLING">Bicycling</option>
+				  <option value="TRANSIT">Transit</option>
+				</select>
+			</label>
+		</div>
+		
+		
+		<div id="nav_servives">
+			<label><input type="checkbox" id="google" value="google" />&nbsp;Google&nbsp;<span id="sG"></span></label>
+			<label><input type="checkbox" id="bing" value="bing" />&nbsp;BING&nbsp;<span id="sB"></span></label>
+			<label><input type="checkbox" id="yours" value="yours" />&nbsp;YOURS&nbsp;<span id="sY"></span></label>
+		</div>
+		
+		
+		<div id="nav_but">
+			<button id="but_calc_route">ROUTE BERECHNEN</button>
+		</div>		
+	
+		<div style="clear:both"></div>
+	</div>
+	
+	
+	
+	<div id="map_container" style="float:right;width:70%;padding:0;margin:0;overflow:hidden;">
+		<div id="map_canvas" style="width:100%;height:100%;"></div>
+	</div>
+	
+	
+	
+	<div id="tabs" style="width:28%;float:left;">
+<ul>
+<li><a href="#map_description">Google</a></li>
+<li><a href="#tabs-2">Bing</a></li>
+<li><a href="#tabs-3">YOURS</a></li>
+</ul>
+<div id="map_description"></div>
+<div id="tabs-2"></div>
+<div id="tabs-3"></div>
+</div>
+<!--	<div id="map_description" >
+	</div>
+	-->
+		<div style="clear:both"></div>
+</div> 
+  
+</body>
+</html>
