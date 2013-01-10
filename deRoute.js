@@ -29,32 +29,57 @@ var polylineOptionsActual = new google.maps.Polyline({
 */
 
 	 
+/*
+	Initialisation preView unser Maps-View. Als StartPunk wurde München (Variable default_loc) gewählt.
+*/	 
 function initialize() {
  
+	//rufen mit AJAX "getJSONkor.php"-File auf, der uns als Rückgabewert JSON-Antwort von Google zurück gibt.  
 	var request = $.ajax({
 		async: false,
 		url: "getJSONkor.php",
   		type: "GET",
-		data: {loc : default_loc},
+		data: {
+			loc : default_loc
+		},
   		dataType: "json"
 	});
 	
+	// event "done" - wurde erforderlich passiert,dann aus "msg.results[0].geometry.location..." hollen notwendige Koordinaten (so zu sagen "parsen")
 	request.done(function(msg) {
 		//console.log(msg);
   		cor_lat=msg.results[0].geometry.location.lat;
   		cor_lng=msg.results[0].geometry.location.lng;        	
 	});
-
+	//event "fail" - falls Probleme kommen 
 	request.fail(function(jqXHR, textStatus) {
   		alert( "Request failed: " + textStatus );
   		return;
 	});
 		
+	//predefinition
+	
+	/*
+		Creates the renderer with the given options. Directions can be rendered on a map (as visual overlays) or additionally on a <div> panel (as textual instructions).
+		https://developers.google.com/maps/documentation/javascript/reference#DirectionsRenderer
+	*/
+	 	
 	directionsDisplay = new google.maps.DirectionsRenderer();
 	
+	/*
+		Creates a new instance of a Geocoder that sends geocode requests to Google servers.
+		https://developers.google.com/maps/documentation/javascript/reference#Geocoder
+	*/
 	geocoder = new google.maps.Geocoder();
-		//variable "munich" - start Position mit koordinaten ( latitude und longitude)
-		//console.log("variable2 "+default_loc+" - start Position mit koordinaten ( latitude("+cor_lat+") und longitude("+cor_lng+"))");
+	
+	
+	/*
+		Creates a LatLng object representing a geographic point. Latitude is specified in degrees within the range [-90, 90]. 
+		Longitude is specified in degrees within the range [-180, 180]. Set noWrap to true to enable values outside of this range. 
+		Note the ordering of latitude and longitude.
+		https://developers.google.com/maps/documentation/javascript/reference#LatLng		
+	*/
+	//variable "munich" - start Position mit koordinaten ( latitude und longitude)
     var munich = new google.maps.LatLng(cor_lat, cor_lng);
     var mapOptions = {
     	zoom:11,
@@ -62,9 +87,15 @@ function initialize() {
         center: munich
     };
     
+    /*
+	    Creates a new map inside of the given HTML container, which is typically a DIV element.
+	    https://developers.google.com/maps/documentation/javascript/reference#Map	    
+    */
     map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
     
+    //This method specifies the map on which directions will be rendered. Pass null to remove the directions from the map.
     directionsDisplay.setMap(map);    
+    //This method renders the directions in a <div>. Pass null to remove the content from the panel.
     directionsDisplay.setPanel(document.getElementById("map_description"));
 } // end initialize()
       
@@ -73,36 +104,37 @@ function initialize() {
       
       
 $(document).ready(function() {
-
 	
-	 
-	 //initialise a map
-      initialize();
-
-   
-        
-	 
-	 
-	 
-	 $("#but_calc_route").click(function(){
-	 if (map) {
-	 	delete(map);
-		initialize();
-	}
-	 	//tests
+	//initialise map wenn web-seite geladen wurde
+    initialize();
+    
+    $("#but_calc_route").click(function(){
+		//falls wir schon eine Route berechnen wurde, löschen Object map und initialisiren wieder unser View
+		if (map) {
+	 		delete(map);
+	 		initialize();
+	 	}
+	 	
+	 	//preStart
+	 	
+	 	//testen ob Benutzer alles richtig gewählt, geschriben... bevor Berechnung zu starten 
+	 	
+	 	//holen start und end Punkten aus web-seiten Elemente
 	 	var pA=$("#start").val();
 	 	var pB=$("#end").val();
-	 	//console.log(pA+"-"+pB);
-	 	//test1: falls Punkt A oder B leer ist
+	 	
+		//------------------------------------------------------------------------------------	 	
+	 	//Test1: falls Punkt A oder B leer ist
 	 	if ((pA=="")||(pB=="")){
 	 		alert("Fehler!!! PunktA oder PunktB wurde nicht eingegeben!");
 	 		return;
 	 	}
 		//------------------------------------------------------------------------------------
-		//test2: getKor für PunktA
+		//test2a: getKoordinaten für PunktA
 		var pA_lng;
 		var pA_lat;
 	 	
+	 	//bekommen JSON-Object von Google mit Koordinaten darin
 	 	var request = $.ajax({
 			async: false,
 			url: "getJSONkor.php",
@@ -110,9 +142,9 @@ $(document).ready(function() {
 			data: {loc : pA},
 	  		dataType: "json"
 		});
-	
+		
+		//parsen und speichern
 		request.done(function(msg) {
-			//console.log(msg);
 			if (msg.status=="OK"){
 		  		pA_lat=msg.results[0].geometry.location.lat;
   				pA_lng=msg.results[0].geometry.location.lng;
@@ -121,14 +153,14 @@ $(document).ready(function() {
 				return;
   			}        	
 		});
-
+		//falls Probleme - dann Fehlermeldung
 		request.fail(function(jqXHR, textStatus) {
   			alert( "Request failed: " + textStatus );
   			return;
 		});
 		
 		//------------------------------------------------------------------------------------
-	 	//test2: getKor für PunktB
+	 	//test2b: getKor für PunktB
 		var pB_lng;
 		var pB_lat;		
 	 	
@@ -141,7 +173,6 @@ $(document).ready(function() {
 		});
 	
 		request.done(function(msg) {
-			//console.log(msg);
 			if (msg.status=="OK"){
 		  		pB_lat=msg.results[0].geometry.location.lat;
   				pB_lng=msg.results[0].geometry.location.lng;
@@ -158,13 +189,22 @@ $(document).ready(function() {
 		
 		//------------------------------------------------------------------------------------	 	
 	 	//test3: Route_Anbieter
+	 	//jQuery methode "is" gibt zurück checkbox-status [true/false], true kommt falls checkbox angehackt wurde
 	 	var stat_g=$("#google").is(':checked');
 	 	var stat_b=$("#bing").is(':checked');	 	
 	 	var stat_o=$("#yours").is(':checked');
  		
  		//falls eine von Route-Anbieter gewählt wurde
  		if(stat_g || stat_b || stat_o){
- 			var selectedMode=$("#mode").val();
+			/*
+				google.maps.TravelMode class
+				The valid travel modes that can be specified in a DirectionsRequest as well as the travel modes returned in a DirectionsStep.
+				BICYCLING	Specifies a bicycling directions request.
+				DRIVING	Specifies a driving directions request.
+				TRANSIT	Specifies a transit directions request.
+				WALKING	Specifies a walking directions request.
+			*/			
+			var selectedMode=$("#mode").val();  //TravelMode
 //------- 			
  			//falls GOOGLE 
  			if (stat_g){
