@@ -17,15 +17,7 @@ var def_punktB="dachau";
 var nav = [];
 var markPoint;
 
-//für start und end Punkten aus web-seiten Elemente
-var pA;
-var pB;
-//für test2a: getKoordinaten für PunktA
-var pA_lng;
-var pA_lat;
-//für test2b: getKor für PunktB
-var pB_lng;
-var pB_lat;	
+
 var selectedMode;
 
 var polylineOptionsActual = new google.maps.Polyline({
@@ -126,6 +118,18 @@ $(document).ready(function() {
 	 		initialize();
 	 	}
 	 	
+	 	//für start und end Punkten aus web-seiten Elemente
+		var pA;
+		var pB;
+		//für test2a: getKoordinaten für PunktA
+		var pA_lng;
+		var pA_lat;
+		//für test2b: getKor für PunktB
+		var pB_lng;
+		var pB_lat;	
+	 	
+	 	
+	 	
 	 	//preStart
 	 	
 	 	//testen ob Benutzer alles richtig gewählt, geschriben... bevor Berechnung zu starten 
@@ -142,7 +146,6 @@ $(document).ready(function() {
 	 	}
 		//------------------------------------------------------------------------------------
 		//test2a: getKoordinaten für PunktA
-
 	 	
 	 	//bekommen JSON-Object von Google mit Koordinaten darin
 	 	var request = $.ajax({
@@ -216,17 +219,17 @@ $(document).ready(function() {
 		
  			//falls GOOGLE 
  			if (stat_g){
- 				loadGoogleRoute();
+ 				loadGoogleRoute(pA,pB);
  			}
 
  			//falls bing
  			if (stat_b){
-	 			loadBingRoute();
+	 			loadBingRoute(pA,pB);
  			}
  			
  			//falls yours
  			if (stat_o){
- 				loadOpenStreetRoute();
+ 				loadOpenStreetRoute(pA_lat, pA_lng, pB_lat, pB_lng);
  			}		
  		
  		}//sonst Fehler Meldung!
@@ -238,12 +241,12 @@ $(document).ready(function() {
 	 	
 	 });//end click();
 	
-	function loadOpenStreetRoute(){
+	function loadOpenStreetRoute(pA_lat, pA_lng, pB_lat, pB_lng){
 		var KML_Layer = new google.maps.KmlLayer('http://www.yournavigation.org/api/1.0/gosmore.php?format=kml&flat='+pA_lat+'&flon='+pA_lng+'&tlat='+pB_lat+'&tlon='+pB_lng+'&v=motorcar&fast=1&layer=mapnik&instructions=1');
 		KML_Layer.setMap(map);
 	}
 	
-	function loadBingRoute(){
+	function loadBingRoute(pA,pB){
 		var global_time_BING=0;
  		var global_length_BING=0;
  		
@@ -335,7 +338,7 @@ $(document).ready(function() {
 		}); //end AJAX
 	} //end loadBingRoute()
 	  
-    function loadGoogleRoute(){
+    function loadGoogleRoute(pA,pB){
 		//http://maps.googleapis.com/maps/api/directions/json?origin=munich&destination=dachau&sensor=false
  			
  		// vorbereiten REQUEST
