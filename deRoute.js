@@ -1,19 +1,17 @@
 var geocoder; // fuer Koordinaten
 		
-var directionDisplay;
+var directionsDisplay;
 var directionsService = new google.maps.DirectionsService();
 		
 var map;  // angezeigte karte
-var KML_Layer;
-var KML_Layer_BING;
-var prev_KML_Layer;
+
 var status=false;
+
 var cor_lng;
 var cor_lat;
 	
 var default_loc="munich";
-var def_punktA=default_loc;
-var def_punktB="dachau";	
+	
 var nav = [];
 var markPoint;
 
@@ -117,6 +115,9 @@ $(document).ready(function() {
 	 		delete(map);
 	 		initialize();
 	 	}
+	 	
+	 	$("#map_description, #tabs-2, #tabs-3, #sG, #sB, #sY").empty();
+	 	
 	 	
 	 	//für start und end Punkten aus web-seiten Elemente
 		var pA;
@@ -244,6 +245,7 @@ $(document).ready(function() {
 	function loadOpenStreetRoute(pA_lat, pA_lng, pB_lat, pB_lng){
 		var KML_Layer = new google.maps.KmlLayer('http://www.yournavigation.org/api/1.0/gosmore.php?format=kml&flat='+pA_lat+'&flon='+pA_lng+'&tlat='+pB_lat+'&tlon='+pB_lng+'&v=motorcar&fast=1&layer=mapnik&instructions=1');
 		KML_Layer.setMap(map);
+		
 	}
 	
 	function loadBingRoute(pA,pB){
@@ -338,7 +340,7 @@ $(document).ready(function() {
 		}); //end AJAX
 	} //end loadBingRoute()
 	  
-    function loadGoogleRoute(pA,pB){
+    function loadGoogleRoute(pA,pB){    	
 		//http://maps.googleapis.com/maps/api/directions/json?origin=munich&destination=dachau&sensor=false
  			
  		// vorbereiten REQUEST

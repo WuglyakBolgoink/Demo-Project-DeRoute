@@ -1,3 +1,4 @@
+<?php
 /*
 	als Eingabeparameter bekommt ein Punkt (String[; lat,lng] )
 	als Rückgabewert gibt JSON-Object von Google-Maps API mit geoInformation über den Punkt		
@@ -7,7 +8,6 @@
 /*
 	TODO: parsing hier machen und als Rüchgabe ein Array ["lat"=>lat,"lng"=>lng] zurück geben 
 */
-<?php
 	$output = array();
 	
 	$loc=$_GET["loc"];//$loc = "munich";

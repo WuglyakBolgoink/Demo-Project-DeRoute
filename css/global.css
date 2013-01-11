@@ -26,6 +26,7 @@
 }
 #nav_but {
 	width:120px;
+	height:100px;
 	float:right;
 	padding:5px;
 }
@@ -33,6 +34,7 @@
 	width:90%;
 	height:90%;
 	border-radius:20px;
+	text-decoration: none;
 }
 #map_description {
 	padding:2px;
