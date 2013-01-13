@@ -1,12 +1,11 @@
 <?php
 //TODO: HTTP_GET prüfen, ob ein oder mehrere Eingabeparameter leer sind
-
+//TODO: add parsing for OpenStreetMap
 $output = array();
 
 $loc=$_GET["map"];
 $from=$_GET["from"];
 $to=$_GET["to"];
-
 
 $status=array();
 $status['success']=true;
@@ -42,6 +41,12 @@ function GetJsonFromURL($url){
 }
 
 
+/**
+ * 
+ * @input: $co -> polyline-Coordinaten
+ * @input: $points -> Descriptions Coordinaten
+ * @return: nichts, bildet KML-File in Root-directory 
+ */
 function create_KML_File($co,$points){
 	$kml='<?xml version="1.0" encoding="UTF-8"?>
 	<kml xmlns="http://earth.google.com/kml/2.0">
